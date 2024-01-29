@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SPI 測試</title>
+    <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+<h1>API 測試</h1>
+<button onclick="lsitProducts()">GET 所有產品</button>
+<br>
+<h1>產品列表</h1>
+<ul id="productList"></ul>
+<button onclick="fetch('/products', { method: 'PUT' })">PUT 更新產品</button>
+<button onclick=delproduct()>DELETE 刪除產品</button>
+<br>
+<label for="name">商品名稱：</label>
+<input type="text" id="name" name="name" required>
+<br>
+<label for="price">商品價格：</label>
+<input type="number" id="price" name="price" required>
+<br>
+<button type="button" onclick="addProduct()">新增商品</button>
+
+<script>
+    function lsitProducts() {
+        fetch('/products')
+            .then(response => response.json())
+            .then(data => {
+                const productList = document.getElementById('productList');
+                console.log(data);
+                // 將每個產品顯示在列表中
+                data.forEach((product, index) => {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = "prod" + index;
+
+                    const listItem = document.createElement('li');
+                    listItem.id = "prod" + index;
+                    listItem.textContent = `${product.name} , ${product.price}`;
+                    listItem.appendChild(checkbox);
+                    productList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function delproduct() {
+        const productList = document.getElementById('productList');
+        const checklist = productList.querySelectorAll('input[type="checkbox"]');
+        const checkedProducts = [];
+
+        checklist.forEach((checkbox, index) => {
+            if (checkbox.checked) {
+                const liId = `prod${index}`;
+                const liText = (document.getElementById(liId).textContent.trim().split(","));
+                checkedProducts.push(liText);
+            }
+        });
+        console.log(JSON.stringify(checkedProducts));
+        // fetch('/products', {
+        //         method: 'Delete',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({name, price})
+        //     })
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             console.log(data);
+        //             // 可以在這裡處理成功新增商品的回應
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //             // 可以在這裡處理錯誤的情況
+        //         });
+        console.log(checkedProducts);
+    }
+
+    function addProduct() {
+        const name = document.getElementById('name').value;
+        const price = document.getElementById('price').value;
+
+        // 檢查 name 和 price 是否存在且不為空
+        if (name && price) {
+            // 使用 fetch 發送 POST 請求
+            fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({name, price})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // 可以在這裡處理成功新增商品的回應
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // 可以在這裡處理錯誤的情況
+                });
+        } else {
+            // 如果 name 或 price 為空，可以在這裡處理錯誤情況
+            console.error('請提供有效的商品名稱和價格');
+        }
+    }
+</script>
+</body>
+</html>
